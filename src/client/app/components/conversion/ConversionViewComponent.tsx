@@ -14,6 +14,12 @@ import '../../styles/card-page.css';
 import { conversionArrow } from '../../utils/conversionArrow';
 import { useTranslate } from '../../redux/componentHooks';
 import EditConversionModalComponent from './EditConversionModalComponent';
+import { useEffect } from 'react';
+import { setRefreshConversionNeeded } from '../../redux/slices/appStateSlice';
+import { selectRefreshConversionNeeded } from '../../redux/slices/appStateSlice';
+import { unitsApi } from '../../redux/api/unitsApi';
+import { useAppDispatch } from '../../redux/reduxHooks';
+
 
 interface ConversionViewComponentProps {
 	conversion: ConversionData;
@@ -25,6 +31,8 @@ interface ConversionViewComponentProps {
  * @returns Single conversion element
  */
 export default function ConversionViewComponent(props: ConversionViewComponentProps) {
+	const refreshConversionNeeded = useAppSelector(selectRefreshConversionNeeded);
+	const dispatch = useAppDispatch();
 	const translate = useTranslate();
 	// Don't check if admin since only an admin is allow to route to this page.
 
@@ -40,9 +48,16 @@ export default function ConversionViewComponent(props: ConversionViewComponentPr
 		setShowEditModal(false);
 	};
 
+	useEffect(() => {
+		if (refreshConversionNeeded) {
+			dispatch(unitsApi.endpoints.getUnitsDetails.initiate(undefined, { forceRefetch: true }));
+			dispatch(setRefreshConversionNeeded(false));
+		}
+	}, [refreshConversionNeeded, dispatch]);
+
 	// Create header from sourceId, destinationId identifiers
 	const conversionIdentifier = String(unitDataById[props.conversion.sourceId]?.identifier + conversionArrow(props.conversion.bidirectional) +
-		unitDataById[props.conversion.destinationId]?.identifier);
+		unitDataById[props.conversion.destinationId]?.identifier);		
 
 	// Unlike the details component, we don't check if units are loaded since must come through that page.
 

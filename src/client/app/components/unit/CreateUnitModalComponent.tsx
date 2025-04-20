@@ -18,6 +18,9 @@ import { showSuccessNotification, showErrorNotification } from '../../utils/noti
 import { MIN_VAL, MAX_VAL } from '../../utils/input';
 import { LineGraphRates } from '../../types/redux/graph';
 import { customRateValid, isCustomRate } from '../../utils/unitInput';
+import { useAppDispatch } from '../../redux/reduxHooks';
+import { setRefreshConversionNeeded } from '../../redux/slices/appStateSlice';
+
 
 /**
  * Defines the create unit modal form
@@ -27,6 +30,8 @@ export default function CreateUnitModalComponent() {
 	const translate = useTranslate();
 	const [submitCreateUnit] = unitsApi.useAddUnitMutation();
 	const CUSTOM_INPUT = '-77';
+	const dispatch = useAppDispatch();
+
 
 	const defaultValues = {
 		name: '',
@@ -180,6 +185,7 @@ export default function CreateUnitModalComponent() {
 		submitCreateUnit(submitState)
 			.unwrap()
 			.then(() => {
+				dispatch(setRefreshConversionNeeded(true));
 				showSuccessNotification(translate('unit.successfully.create.unit'));
 			})
 			.catch(() => {
